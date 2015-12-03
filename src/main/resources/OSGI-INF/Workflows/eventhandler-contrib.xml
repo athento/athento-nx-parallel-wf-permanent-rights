@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<component
+	name="org.athento.nuxeo.athento-nx-parallel-wf-permanent-rights.eventhandler"
+	version="1.0">
+	<require>org.nuxeo.runtime.started</require>
+
+	<extension target="org.nuxeo.ecm.core.operation.OperationServiceComponent"
+		point="event-handlers">
+
+		<handler chainId="cancelWorkflow">
+			<event>workflowCanceled</event>
+		</handler>
+
+	</extension>
+
+</component>	

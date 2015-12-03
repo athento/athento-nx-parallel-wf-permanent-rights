@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<component
+	name="org.athento.nuxeo.athento-nx-parallel-wf-permanent-rights.filters"
+	version="1.0">
+	<require>org.nuxeo.runtime.started</require>
+
+
+	<extension target="org.nuxeo.ecm.platform.actions.ActionService"
+		point="filters">
+
+		<filter id="filter@wf@ParallelDocumentReviewPermanentRights">
+			<rule grant="true">
+				<permission>ReadWrite</permission>
+				<type>Audio</type>
+				<type>File</type>
+				<type>Note</type>
+				<type>Picture</type>
+				<type>Video</type>
+				<condition>#{!currentDocument.locked}</condition>
+			</rule>
+			<rule grant="false">
+				<condition>document.isImmutable()</condition>
+			</rule>
+		</filter>
+
+	</extension>
+
+</component>

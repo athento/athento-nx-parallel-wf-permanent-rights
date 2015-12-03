@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<component
+	name="org.athento.nuxeo.athento-nx-parallel-wf-permanent-rights.schema"
+	version="1.0">
+	<require>org.nuxeo.runtime.started</require>
+
+	<extension target="org.nuxeo.ecm.core.schema.TypeService"
+		point="schema">
+
+		<schema name="var_Task381" prefix="var_Task381" override="true"
+			src="data/schemas/var_Task381.xsd" />
+		<schema name="var_Task382" prefix="var_Task382" override="true"
+			src="data/schemas/var_Task382.xsd" />
+		<schema name="var_Task383" prefix="var_Task383" override="true"
+			src="data/schemas/var_Task383.xsd" />
+		<schema name="var_Task384" prefix="var_Task384" override="true"
+			src="data/schemas/var_Task384.xsd" />
+		<schema name="var_Task385" prefix="var_Task385" override="true"
+			src="data/schemas/var_Task385.xsd" />
+		<schema name="var_Task386" prefix="var_Task386" override="true"
+			src="data/schemas/var_Task386.xsd" />
+		<schema name="var_Task387" prefix="var_Task387" override="true"
+			src="data/schemas/var_Task387.xsd" />
+		<schema name="var_ParallelDocumentReviewPermanentRights"
+			prefix="var_ParallelDocumentReviewPermanentRights" override="true"
+			src="data/schemas/var_ParallelDocumentReviewPermanentRights.xsd" />
+
+
+	</extension>
+
+</component>	

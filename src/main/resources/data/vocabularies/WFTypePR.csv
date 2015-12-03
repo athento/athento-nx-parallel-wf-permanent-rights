@@ -1,0 +1,3 @@
+"id","label","obsolete","ordering"
+"validation","wf.ParallelDocumentReviewPermanentRights.workflowType.validation","0","0"
+"simpleReview","wf.ParallelDocumentReviewPermanentRights.workflowType.simpleReview","0","1"

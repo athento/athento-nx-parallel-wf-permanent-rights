@@ -1,0 +1,15 @@
+Manifest-Version: 1.0
+Require-Bundle: org.nuxeo.runtime
+Bundle-Vendor: Athento
+Bundle-Version: 1.0
+Bundle-Name: Athento Nx Parallel Permanent Rights
+Nuxeo-Component: OSGI-INF/Workflows/chains-contrib.xml,
+ OSGI-INF/Workflows/doctype-contrib.xml,
+ OSGI-INF/Workflows/eventhandler-contrib.xml,
+ OSGI-INF/Workflows/filters-contrib.xml,
+ OSGI-INF/Workflows/layout-contrib.xml,
+ OSGI-INF/Workflows/schema-contrib.xml,
+ OSGI-INF/Workflows/workflow-contrib.xml
+Bundle-ManifestVersion: 2
+Created-By: Athento
+Bundle-SymbolicName: org.athento.nuxeo.athento-nx-parallel-wf-permanent-rights

@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<component
+	name="org.athento.nuxeo.athento-nx-parallel-wf-permanent-rights.chains"
+	version="1.0">
+	<require>org.nuxeo.runtime.started</require>
+
+	<extension target="org.nuxeo.ecm.core.operation.OperationServiceComponent"
+		point="chains">
+
+		<chain id="NRD-AC-PRPR-ChooseParticipants-Output">
+			<operation id="Context.FetchDocument" />
+			<operation id="Context.RunOperation">
+				<param type="string" name="id">NRD-AC-PRPR-LockDocument</param>
+				<param type="boolean" name="isolate">false</param>
+			</operation>
+			<operation id="Context.SetWorkflowVar">
+				<param type="string" name="name">initiatorComment</param>
+				<param type="object" name="value">expr:NodeVariables["comment"]
+				</param>
+			</operation>
+		</chain>
+		<chain id="NRD-AC-PRPR-LockDocument">
+			<operation id="Context.FetchDocument" />
+			<operation id="Auth.LoginAs">
+				<param type="string" name="name">expr:workflowInitiator</param>
+			</operation>
+			<operation id="Document.Lock" />
+		</chain>
+		<chain id="NRD-AC-PRPR-UnlockDocument">
+			<operation id="Context.FetchDocument" />
+			<operation id="Document.Unlock" />
+		</chain>
+		<chain id="NRD-AC-PRPR-ValidateNode-Output">
+			<operation id="Context.FetchDocument" />
+			<operation id="Context.RunOperation">
+				<param type="string" name="id">NRD-AC-PRPR-UnlockDocument</param>
+				<param type="boolean" name="isolate">false</param>
+			</operation>
+			<operation id="Context.RunOperation">
+				<param type="string" name="id">logInAudit</param>
+				<param type="boolean" name="isolate">false</param>
+			</operation>
+		</chain>
+		<chain id="NRD-AC-PRPR-force-validate">
+			<operation id="Context.FetchDocument" />
+			<operation id="Auth.LoginAs">
+				<param type="string" name="name">expr:Context["workflowInitiator"]
+				</param>
+			</operation>
+			<operation id="Audit.Log">
+				<param type="string" name="event">Consultation time excedeed</param>
+				<param type="string" name="category">Review workflow</param>
+				<param type="string" name="comment">Some consultation tasks were aborted
+					by the system as they received no feedback message.
+				</param>
+			</operation>
+			<operation id="Workflow.ResumeNodeOperation" />
+		</chain>
+		<chain id="NRD-AC-PRPR-storeTaskInfo">
+			<operation id="Context.FetchDocument" />
+			<operation id="Context.RunScript">
+				<param type="string" name="script">This[0]</param>
+			</operation>
+			<operation id="Context.SetVar">
+				<param type="string" name="name">tasksInfo</param>
+				<param type="object" name="value">expr:NodeVariables["tasks"]</param>
+			</operation>
+			<operation id="Context.SetVar">
+				<param type="string" name="name">numberNA</param>
+				<param type="object" name="value">expr:NodeVariables["tasks"].getNumberEndedWithStatus("NA")
+				</param>
+			</operation>
+			<operation id="Context.SetVar">
+				<param type="string" name="name">numberRejected</param>
+				<param type="object" name="value">expr:NodeVariables["tasks"].getNumberEndedWithStatus("reject")
+				</param>
+			</operation>
+			<operation id="Context.SetVar">
+				<param type="string" name="name">numberApproved</param>
+				<param type="object" name="value">expr:NodeVariables["tasks"].getNumberEndedWithStatus("approve")
+				</param>
+			</operation>
+			<operation id="Context.SetVar">
+				<param type="string" name="name">numberOfTasks</param>
+				<param type="object" name="value">expr:NodeVariables["numberOfTasks"]
+				</param>
+			</operation>
+			<operation id="Render.Document">
+				<param type="string" name="template">template:NRD-PR-TasksInfo</param>
+				<param type="string" name="filename">output.ftl</param>
+				<param type="string" name="mimetype">text/xml</param>
+				<param type="string" name="type">ftl</param>
+			</operation>
+			<operation id="Context.SetWorkflowVar">
+				<param type="string" name="name">review_result_file</param>
+				<param type="object" name="value">expr:This.get(0)</param>
+			</operation>
+			<operation id="Context.SetWorkflowVar">
+				<param type="string" name="name">review_result</param>
+				<param type="object" name="value">expr:This.get(0).getString()</param>
+			</operation>
+		</chain>
+		<chain id="cancelWorkflow">
+			<operation id="Context.FetchDocument" />
+			<operation id="Context.SetVar">
+				<param type="string" name="name">isParallelWF</param>
+				<param type="object" name="value">expr:Event.context.getProperty("wfName").equals("wf.ParallelDocumentReviewPermanentRights.ParallelDocumentReviewPermanentRights")?true:false
+				</param>
+			</operation>
+			<operation id="Context.RunOperation">
+				<param type="string" name="id">expr:isParallelWF?"Document.Unlock":"voidChain"
+				</param>
+				<param type="boolean" name="isolate">false</param>
+			</operation>
+		</chain>
+		<chain id="giveIndividualPermanentRights">
+			<operation id="Context.FetchDocument" />
+			<operation id="Context.RunScript">
+				<param type="string" name="script">Context["usergroupname"] = item.substring(item.indexOf(':')+1);
+				</param>
+			</operation>
+			<operation id="Document.SetACE">
+				<param type="string" name="permission">Read</param>
+				<param type="string" name="user">expr:usergroupname</param>
+				<param type="string" name="acl">local</param>
+				<param type="boolean" name="grant">true</param>
+				<param type="boolean" name="overwrite">false</param>
+			</operation>
+		</chain>
+		<chain id="givePermanentRights">
+			<operation id="Context.FetchDocument" />
+			<operation id="Context.SetVar">
+				<param type="string" name="name">participantsList</param>
+				<param type="object" name="value">expr:WorkflowVariables["participants"]
+				</param>
+			</operation>
+			<operation id="Auth.LoginAs">
+				<param type="string" name="name">Administrator</param>
+			</operation>
+			<operation id="Context.RunOperationOnList">
+				<param type="string" name="id">giveIndividualPermanentRights
+				</param>
+				<param type="string" name="list">participantsList</param>
+				<param type="boolean" name="isolate">true</param>
+				<param type="string" name="item">item</param>
+				<param type="boolean" name="newTx">true</param>
+				<param type="boolean" name="rollbackGlobalOnError">true</param>
+			</operation>
+			<operation id="Auth.Logout" />
+		</chain>
+		<chain id="initInitiatorComment">
+			<operation id="Context.RunScript">
+				<param type="string" name="script">if((NodeVariables["comment"] != "")
+					AND (NodeVariables["comment"] != null)){
+					WorkflowVariables["initiatorComment"]= NodeVariables["comment"];}
+				</param>
+			</operation>
+		</chain>
+		<chain id="logInAudit">
+			<operation id="Audit.Log">
+				<param type="string" name="event">expr:NodeVariables["button"]
+					=="reject"?"Document refused":"Document validated"
+				</param>
+				<param type="string" name="category">Review workflow</param>
+				<param type="string" name="comment">expr:@{nodeLastActor}
+					@{NodeVariables["button"] =="reject"?"Document
+					refused":"validated"} the document with the following comment:
+					@{NodeVariables["comment"]}
+				</param>
+			</operation>
+		</chain>
+		<chain id="nextAssignee">
+			<operation id="Context.RunScript">
+				<param type="string" name="script">if (NodeVariables["button"] ==
+					"validate") {
+					WorkflowVariables["index"] =
+					WorkflowVariables["index"] + 1;
+					}
+					else if (NodeVariables["button"] ==
+					"reject") {
+					WorkflowVariables["index"] = WorkflowVariables["index"]
+					- 1;
+					}
+					else if (NodeVariables["button"] == "submit") {
+					WorkflowVariables["index"] = 0;
+					}
+				</param>
+			</operation>
+		</chain>
+		<chain id="notifyInitiatorEndOfWorkflow">
+			<operation id="Context.FetchDocument" />
+			<operation id="Notification.SendMail">
+				<param type="string" name="from">expr:Env["mail.from"]</param>
+				<param type="string" name="message">The document was approved by every
+					participant.
+				</param>
+				<param type="string" name="subject">expr:@{Env["nuxeo.notification.eMailSubjectPrefix"]}
+					Document approved
+				</param>
+				<param type="stringlist" name="to">expr:Fn.getEmail(workflowInitiator)
+				</param>
+				<param type="boolean" name="HTML">false</param>
+				<param type="boolean" name="rollbackOnError">true</param>
+				<param type="string" name="viewId">view_documents</param>
+			</operation>
+		</chain>
+		<chain id="reinitAssigneeComment">
+			<operation id="Context.RunScript">
+				<param type="string" name="script">if((NodeVariables["comment"] != "")
+					AND (NodeVariables["comment"] != null)){
+					NodeVariables["comment"]=
+					null;}
+				</param>
+			</operation>
+		</chain>
+		<chain id="reminderAsignees">
+			<operation id="Context.FetchDocument" />
+			<operation id="Notification.SendMail">
+				<param type="string" name="from">expr:Env["mail.from"]</param>
+				<param type="string" name="message">This is a reminder for the approval
+					of the Document
+				</param>
+				<param type="string" name="subject">expr:@{Env["nuxeo.notification.eMailSubjectPrefix"]}
+					Document to review - Reminder
+				</param>
+				<param type="stringlist" name="to">expr:Fn.getEmail(currentUser)
+				</param>
+				<param type="boolean" name="HTML">false</param>
+				<param type="boolean" name="Strict User Resolution">false</param>
+				<param type="boolean" name="rollbackOnError">true</param>
+				<param type="string" name="viewId">view_documents</param>
+			</operation>
+		</chain>
+		<chain id="terminateWorkflow">
+			<operation id="Context.FetchDocument" />
+			<operation id="Context.RunOperation">
+				<param type="string" name="id">logInAudit</param>
+				<param type="boolean" name="isolate">false</param>
+			</operation>
+			<operation id="Context.RunDocumentOperationInNewTx">
+				<param type="string" name="id">notifyInitiatorEndOfWorkflow</param>
+				<param type="boolean" name="isolate">false</param>
+				<param type="boolean" name="rollbackGlobalOnError">false</param>
+			</operation>
+			<operation id="Context.RunOperation">
+				<param type="string" name="id">expr:WorkflowVariables["validationOrReview"]
+					== "validation"?"validateDocument":"voidChain"
+				</param>
+				<param type="boolean" name="isolate">false</param>
+			</operation>
+			<operation id="Audit.Log">
+				<param type="string" name="event">Review completed successfully
+				</param>
+				<param type="string" name="category">Review workflow</param>
+				<param type="string" name="comment">All the participants of the review
+					have approved the document.
+				</param>
+			</operation>
+		</chain>
+		<chain id="PRPR-validateDocument">
+			<operation id="Context.FetchDocument" />
+			<operation id="Document.SetLifeCycle">
+				<param type="string" name="value">approve</param>
+			</operation>
+			<operation id="Document.CheckIn">
+				<param type="string" name="version">minor</param>
+				<param type="string" name="comment">Automatic checkin after validation
+				</param>
+			</operation>
+			<operation id="Context.RunOperation">
+				<param type="string" name="id">givePermanentRights</param>
+				<param type="boolean" name="isolate">false</param>
+			</operation>			
+		</chain>
+		<chain id="voidChain">
+			<operation id="Context.FetchDocument" />
+		</chain>
+
+	</extension>
+
+</component>
